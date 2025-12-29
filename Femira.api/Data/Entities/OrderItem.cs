@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Femira.api.Data.Entities
 {
@@ -17,7 +18,8 @@ namespace Femira.api.Data.Entities
         public decimal P_Price { get; set; }
 
         public int Quantity { get; set; }
-        
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Unit { get; set; }
 
         public string P_ImageUrl { get; set; }

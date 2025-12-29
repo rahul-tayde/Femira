@@ -20,5 +20,7 @@ namespace Femira.api.Data.Entities
         public string Password_Hash { get; set; }
 
         public ICollection<UserAddress> UserAddresses { get; set; }
+        public ICollection<Order> Orders { get; set; }
+
     }
 }
