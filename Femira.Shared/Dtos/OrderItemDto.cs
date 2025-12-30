@@ -1,15 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Femira.api.Data.Entities
+﻿namespace Femira.Shared.Dtos
 {
-    public class OrderItem
+    public class OrderItemDto
     {
-        [Key]
         public long OrderItem_Id { get; set; }
-
-        public int Order_Id { get; set; }
-        public virtual Order Order { get; set; }
 
         public int Product_Id { get; set; }
 
@@ -19,7 +12,6 @@ namespace Femira.api.Data.Entities
 
         public int Quantity { get; set; }
 
-        //[Column(TypeName = "decimal(18,2)")]
         public string Unit { get; set; }
 
         public string P_ImageUrl { get; set; }

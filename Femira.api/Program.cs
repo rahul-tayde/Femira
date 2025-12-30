@@ -1,4 +1,7 @@
 using Femira.api.Data;
+using Femira.api.Data.Entities;
+using Femira.api.Data.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +17,12 @@ builder.Services.AddDbContext<DataContext>(options =>
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseSqlServer(connectionString);
 });
+
+builder.Services.AddTransient<AuthService>()
+    .AddTransient<OrderService>()
+    .AddTransient<ProductService>()
+    .AddTransient<UserService>()
+    .AddTransient<IPasswordHasher<User>, PasswordHasher<User>> ();
 
 var app = builder.Build();
 

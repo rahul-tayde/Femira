@@ -25,6 +25,10 @@ namespace Femira.api.Data.Entities
         public int User_Address_Id { get; set; }
         public string Address { get; set; }
 
+        public string AddressName { get; set; }
+
+        public int TotalItems { get; set; }
+
         public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }
