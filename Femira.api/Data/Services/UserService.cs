@@ -70,7 +70,7 @@ namespace Femira.api.Data.Services
 
 
 
-        public async Task<AddressDto[]> GetAddresses(int userId) =>
+        public async Task<AddressDto[]> GetAddressesAsync(int userId) =>
             await _context.UserAddresses
             .AsNoTracking()
             .Where(a => a.User_Id == userId)

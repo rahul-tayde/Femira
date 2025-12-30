@@ -65,18 +65,22 @@ namespace Femira.api.Data.Services
             }
         }
 
-        public async Task<AddressDto[]> GetUserOrdersAsync(int userId, int startIndex, int pageSize) =>
-            await _context.UserAddresses
+        public async Task<OrderDto[]> GetUserOrdersAsync(int userId, int startIndex, int pageSize) =>
+            await _context.Orders
                 .AsNoTracking()
                 .Where(a => a.User_Id == userId)
-                .OrderByDescending(a => a.Address_Id)
+                .OrderByDescending(a => a.Order_Id)
                 .Skip(startIndex).Take(pageSize)
-                .Select(a=> new AddressDto
+                .Select(a=> new OrderDto
                 {
-                    Id = a.Address_Id,
-                    Address = a.Address,
-                    IsDefault = a.IsDefault,
-                    name = a.Name
+                   Address = a.Address,
+                   AddressName = a.AddressName,
+                   Order_Date = a.Order_Date,
+                   Order_Id = a.Order_Id,
+                   remarks = a.remarks,
+                   status = a.status,
+                   Total_Amount = a.Total_Amount,
+                   TotalItems = a.TotalItems
                 })
                 .ToArrayAsync();
         

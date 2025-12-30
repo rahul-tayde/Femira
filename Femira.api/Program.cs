@@ -1,6 +1,7 @@
 using Femira.api.Data;
 using Femira.api.Data.Entities;
 using Femira.api.Data.Services;
+using Femira.api.Endpoints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +25,8 @@ builder.Services.AddTransient<AuthService>()
     .AddTransient<UserService>()
     .AddTransient<IPasswordHasher<User>, PasswordHasher<User>> ();
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -37,5 +40,10 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapAuthEndpoints()
+    .MapOrderEndpoints()
+    .MapProductEndpoints()
+    .MapUserEndpoints();
 
 app.Run();
