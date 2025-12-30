@@ -2,8 +2,11 @@ using Femira.api.Data;
 using Femira.api.Data.Entities;
 using Femira.api.Data.Services;
 using Femira.api.Endpoints;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +28,30 @@ builder.Services.AddTransient<AuthService>()
     .AddTransient<UserService>()
     .AddTransient<IPasswordHasher<User>, PasswordHasher<User>> ();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    var issuer = builder.Configuration.GetValue<string>("Jwt:Issuer");
 
+    var secretKey = builder.Configuration.GetValue<string>("Jwt:SecretKey");
+    var securityKey = System.Text.Encoding.UTF8.GetBytes(secretKey);
+    var symmetricKey = new SymmetricSecurityKey(securityKey);
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = issuer,
+        ValidateIssuer = true,
+        IssuerSigningKey = symmetricKey,
+        ValidateIssuerSigningKey = true,
+        ValidateAudience = false
+    };
+});
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -33,9 +59,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    AutoMigrateDb(app.Services);
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
@@ -47,3 +77,11 @@ app.MapAuthEndpoints()
     .MapUserEndpoints();
 
 app.Run();
+
+static void AutoMigrateDb(IServiceProvider sp)
+{
+    using var scope = sp.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    if(context.Database.GetAppliedMigrations().Any())
+        context.Database.Migrate();
+}

@@ -2,6 +2,9 @@
 using Femira.Shared.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Femira.api.Data.Services
 {
@@ -9,11 +12,13 @@ namespace Femira.api.Data.Services
     {
         private readonly DataContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(DataContext context, IPasswordHasher<User> passwordHasher)
+        public AuthService(DataContext context, IPasswordHasher<User> passwordHasher, IConfiguration configuration)
         {
             _context = context;
             _passwordHasher = passwordHasher;
+            _configuration = configuration;
         }
 
         public async Task<ApiResult> RegisterAsync(RegisterDto dto)
@@ -65,11 +70,39 @@ namespace Femira.api.Data.Services
             }
 
             // Generate JWT Token
-            var jwt = "JWT _TOKEN";
+            var jwt = GenerateToken(user);
 
             var loggedInUser = new LoggedInUser(user.Id, user.full_name, user.Mobile_Number, jwt);
             return ApiResult<LoggedInUser> .Success(loggedInUser);
         }
+
+        private string GenerateToken(User user)
+        {
+            Claim[] claims = [
+                new (ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new (ClaimTypes.Name, user.full_name),
+                new (ClaimTypes.MobilePhone, user.Mobile_Number),
+                ];
+
+            var secretKey = _configuration.GetValue<string>("Jwt:SecretKey");
+            var securityKey = System.Text.Encoding.UTF8.GetBytes(secretKey);
+            var symmetricKey = new SymmetricSecurityKey(securityKey);
+
+            var signingCreds = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha256);
+
+            var expireInMinutes = _configuration.GetValue<int>("Jwt:ExpireInMinutes");
+
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _configuration.GetValue<string>("Jwt:Issuer"),
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(expireInMinutes),
+                signingCredentials: signingCreds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+
+        }
+
     }
 
 
